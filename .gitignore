@@ -1,0 +1,6 @@
+bin/LobbyController*
+*.c
+*.o
+*.exe
+*.rar
+LobbyController.layout
