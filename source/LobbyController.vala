@@ -177,6 +177,15 @@ public class LobbyConnection
         connection.message_received.connect(message_received);
         tunneled_connection = new ServerPlayerTunneledConnection();
         tunneled_connection.send_message_request.connect(send_message_request);
+        tunneled_connection.close_connection_request.connect(close_connection_request);
+    }
+
+    ~LobbyConnection()
+    {
+        connection.closed.disconnect(do_disconnected);
+        connection.message_received.disconnect(message_received);
+        tunneled_connection.send_message_request.disconnect(send_message_request);
+        tunneled_connection.close_connection_request.disconnect(close_connection_request);
     }
 
     public void send(ServerLobbyMessage message)
@@ -204,6 +213,11 @@ public class LobbyConnection
         send_mutex.unlock();
     }
 
+    private void close_connection_request()
+    {
+        send(new ServerLobbyMessageCloseTunnel());
+    }
+
     private void message_received(Connection connection, Message msg)
     {
         Serializable? m = Serializable.deserialize(msg.data);
@@ -220,6 +234,12 @@ public class LobbyConnection
             return;
         }
 
+        if (m is ClientLobbyMessageCloseTunnel)
+        {
+            tunneled_connection.disconnected();
+            return;
+        }
+
         ClientLobbyMessage? message = m as ClientLobbyMessage;
         mutex.lock();
         messages.add(message);
@@ -229,6 +249,7 @@ public class LobbyConnection
     private void do_disconnected()
     {
         disconnected = true;
+        tunneled_connection.disconnected();
     }
 
     private Connection connection { get; private set; }
@@ -240,6 +261,7 @@ public class ServerLobby
 {
     private int game_IDs = 0;
     private Mutex mutex = Mutex();
+    private Mutex game_mutex = Mutex();
 
     public signal void user_left_lobby(ServerLobby lobby, ServerLobbyUser user);
 
@@ -325,11 +347,13 @@ public class ServerLobby
             }
         }
 
+        game_mutex.lock();
         for (int i = 0; i < games.size; i++)
         {
             ServerLobbyGame game = games[i];
             if (game.should_start)
             {
+                game.finished.connect(game_finished);
                 game.start();
                 ServerLobbyMessageGameRemoved msg = new ServerLobbyMessageGameRemoved(game.ID);
                 foreach (ServerLobbyUser u in users)
@@ -338,6 +362,7 @@ public class ServerLobby
                 games.remove_at(i--);
             }
         }
+        game_mutex.unlock();
 
         mutex.unlock();
     }
@@ -375,7 +400,7 @@ public class ServerLobby
             {
                 if (game.ID == request.ID)
                 {
-                    if (game.users.size >= 4)
+                    if (game.users.size >= 4 || !game.add_user(user))
                         break;
 
                     user.send(new ServerLobbyMessageEnterGameResult(true));
@@ -384,9 +409,7 @@ public class ServerLobby
                     foreach (ServerLobbyUser u in users)
                         u.send(msg);
 
-                    game.add_user(user);
                     user.current_game = game;
-
                     return;
                 }
             }
@@ -425,6 +448,13 @@ public class ServerLobby
         user.current_game = null;
     }
 
+    private void game_finished(ServerLobbyGame game)
+    {
+        game_mutex.lock();
+        active_games.remove(game);
+        game_mutex.unlock();
+    }
+
     public int ID { get; private set; }
     public string name { get; private set; }
     public ArrayList<ServerLobbyUser> users { get; private set; }
@@ -460,10 +490,12 @@ public class ServerLobbyUser
 
 public class ServerLobbyGame
 {
-    private ServerMenu menu = new ServerMenu();
+    private ServerMenu? menu = new ServerMenu();
     private LobbyGameServerController controller;
     private GameStartInfo start_info;
     private ArrayList<UserPlayer> players;
+
+    public signal void finished(ServerLobbyGame game);
 
     public ServerLobbyGame(int ID)
     {
@@ -473,14 +505,16 @@ public class ServerLobbyGame
         menu.game_start.connect(menu_start);
     }
 
-    public void add_user(ServerLobbyUser user)
+    public bool add_user(ServerLobbyUser user)
     {
         ServerHumanPlayer player = new ServerHumanPlayer(user.connection.tunneled_connection, user.username);
-        menu.player_connected(player);
+        if (!menu.player_connected(player))
+            return false;
 
         users.add(user);
         players.add(new UserPlayer(user, player));
         user.current_game = this;
+        return true;
     }
 
     public void remove_user(ServerLobbyUser user)
@@ -490,7 +524,8 @@ public class ServerLobbyGame
             UserPlayer player = players[i];
             if (player.user == user)
             {
-                menu.player_disconnected(player.player);
+                if (menu != null)
+                    menu.player_disconnected(player.player);
                 players.remove_at(i);
                 break;
             }
@@ -504,7 +539,8 @@ public class ServerLobbyGame
     {
         should_start = false;
         controller = new LobbyGameServerController(menu.players, menu.observers);
-        //menu = null;
+        controller.finished.connect(on_finished);
+        menu = null;
         controller.start(start_info);
     }
 
@@ -512,6 +548,11 @@ public class ServerLobbyGame
     {
         this.start_info = start_info;
         should_start = true;
+    }
+
+    private void on_finished()
+    {
+        finished(this);
     }
 
     public int ID { get; private set; }

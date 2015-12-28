@@ -7,7 +7,9 @@ public class LobbyGameServerController
     private ClientMessageParser parser = new ClientMessageParser();
     private ArrayList<ServerPlayer> players;
     private ArrayList<ServerPlayer> observers;
-    private bool finished = false;
+    private bool finish = false;
+
+    public signal void finished(LobbyGameServerController server);
 
     public LobbyGameServerController(ArrayList<ServerPlayer> players, ArrayList<ServerPlayer> observers)
     {
@@ -36,7 +38,7 @@ public class LobbyGameServerController
         server = new Server(players, observers, rnd, info);
         Timer timer = new Timer();
 
-        while (!finished && !server.finished)
+        while (!finish && !server.finished)
         {
             process_messages();
             server.process((float)timer.elapsed());
@@ -44,6 +46,7 @@ public class LobbyGameServerController
         }
 
         die(players, observers);
+        finished(this);
     }
 
     private void sleep()
@@ -65,7 +68,7 @@ public class LobbyGameServerController
 
     private void player_disconnected(ServerPlayer player)
     {
-        finished = true;
+        finish = true;
     }
 
     private void die(ArrayList<ServerPlayer> players, ArrayList<ServerPlayer> observers)
@@ -73,12 +76,14 @@ public class LobbyGameServerController
         foreach (ServerPlayer player in players)
         {
             player.disconnected.disconnect(player_disconnected);
+            player.receive_message.disconnect(message_received);
             player.close();
         }
 
         foreach (ServerPlayer player in observers)
         {
             player.disconnected.disconnect(player_disconnected);
+            player.receive_message.disconnect(message_received);
             player.close();
         }
     }

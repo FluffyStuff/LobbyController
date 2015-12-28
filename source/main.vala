@@ -21,6 +21,7 @@ public int main()
 private void fix_reflection_bug()
 {
     typeof(Lobby.ClientLobbyMessage).class_ref();
+    typeof(Lobby.ClientLobbyMessageCloseTunnel).class_ref();
     typeof(Lobby.ClientLobbyMessageGetLobbies).class_ref();
     typeof(Lobby.ClientLobbyMessageAuthenticate).class_ref();
     typeof(Lobby.ClientLobbyMessageEnterLobby).class_ref();
