@@ -2,6 +2,8 @@ VALAC = valac
 NAME  = LobbyController
 DIRS  = \
 	source/*.vala \
+	../RiichiMahjong/source/Environment.vala \
+	../RiichiMahjong/source/Engine/Helper/Helper.vala \
 	../RiichiMahjong/source/Engine/Helper/Networking.vala \
 	../RiichiMahjong/source/Engine/Helper/Threading.vala \
 	../RiichiMahjong/source/Game/Logic/*.vala \

@@ -63,8 +63,28 @@ public class LobbyController
             ClientLobbyMessage? message;
             while ((message = connection.dequeue_message()) != null)
             {
-                if (message is ClientLobbyMessageAuthenticate)
+                if (message is ClientLobbyMessageVersionInfo)
                 {
+                    ClientLobbyMessageVersionInfo msg = message as ClientLobbyMessageVersionInfo;
+
+                    if (!Environment.compatible(msg.version_info))
+                    {
+                        connection.send(new ServerLobbyMessageVersionMismatch(true));
+                        connection.disconnect();
+                        break;
+                    }
+
+                    connection.version_info = msg.version_info;
+                    connection.send(new ServerLobbyMessageVersionInfo(Environment.version_info));
+                }
+                else if (message is ClientLobbyMessageAuthenticate)
+                {
+                    if (connection.version_info == null)
+                    {
+                        connection.disconnect();
+                        break;
+                    }
+
                     ClientLobbyMessageAuthenticate msg = message as ClientLobbyMessageAuthenticate;
                     if (authentication_request(connection, msg))
                     {
@@ -78,7 +98,15 @@ public class LobbyController
                         connection.send(new ServerLobbyMessageAuthenticationResult(false, "Authentication problem"));
                 }
                 else if (message is ClientLobbyMessageGetLobbies)
+                {
+                    if (connection.version_info == null)
+                    {
+                        connection.disconnect();
+                        break;
+                    }
+
                     get_lobbies_request(connection);
+                }
             }
 
         }
@@ -118,8 +146,7 @@ public class LobbyController
 
     private bool authentication_request(LobbyConnection connection, ClientLobbyMessageAuthenticate message)
     {
-        string name = message.username.strip();
-        return name.char_count() >= 1 && name.char_count() <= 20;
+        return Environment.is_valid_name(message.username);
     }
 
     private void get_lobbies_request(LobbyConnection connection)
@@ -178,6 +205,8 @@ public class LobbyConnection
         tunneled_connection = new ServerPlayerTunneledConnection();
         tunneled_connection.send_message_request.connect(send_message_request);
         tunneled_connection.close_connection_request.connect(close_connection_request);
+
+        version_info = null;
     }
 
     ~LobbyConnection()
@@ -204,6 +233,11 @@ public class LobbyConnection
         mutex.unlock();
 
         return message;
+    }
+
+    public void disconnect()
+    {
+        connection.close();
     }
 
     private void send_message_request(ServerPlayerTunneledConnection connection, ServerMessage message)
@@ -255,6 +289,7 @@ public class LobbyConnection
     private Connection connection { get; private set; }
     public ServerPlayerTunneledConnection tunneled_connection { get; private set; }
     public bool disconnected { get; private set; }
+    public VersionInfo? version_info { get; set; }
 }
 
 public class ServerLobby
@@ -313,9 +348,7 @@ public class ServerLobby
             if (user.disconnected)
             {
                 users.remove_at(i--);
-
-                if (user.current_game != null)
-                    user.current_game.remove_user(user);
+                user_leave_game(user);
 
                 ServerLobbyMessageUserLeftLobby msg = new ServerLobbyMessageUserLeftLobby(user.ID);
                 foreach (ServerLobbyUser u in users)
@@ -355,7 +388,7 @@ public class ServerLobby
             {
                 game.finished.connect(game_finished);
                 game.start();
-                ServerLobbyMessageGameRemoved msg = new ServerLobbyMessageGameRemoved(game.ID);
+                ServerLobbyMessageGameRemoved msg = new ServerLobbyMessageGameRemoved(game.ID, true);
                 foreach (ServerLobbyUser u in users)
                     u.send(msg);
                 active_games.add(game);
@@ -403,7 +436,7 @@ public class ServerLobby
                     if (game.users.size >= 4 || !game.add_user(user))
                         break;
 
-                    user.send(new ServerLobbyMessageEnterGameResult(true));
+                    user.send(new ServerLobbyMessageEnterGameResult(true, game.ID));
 
                     ServerLobbyMessageUserEnteredGame msg = new ServerLobbyMessageUserEnteredGame(game.ID, user.ID);
                     foreach (ServerLobbyUser u in users)
@@ -415,7 +448,7 @@ public class ServerLobby
             }
         }
 
-        user.send(new ServerLobbyMessageEnterGameResult(false));
+        user.send(new ServerLobbyMessageEnterGameResult(false, -1));
     }
 
     private void leave_game_request(ServerLobbyUser user, ClientLobbyMessageLeaveGame request)
@@ -437,9 +470,12 @@ public class ServerLobby
 
         if (game.users[0] == user)
         {
-            ServerLobbyMessageGameRemoved m = new ServerLobbyMessageGameRemoved(game.ID);
+            ServerLobbyMessageGameRemoved m = new ServerLobbyMessageGameRemoved(game.ID, false);
             foreach (ServerLobbyUser u in users)
                 u.send(m);
+
+            foreach (ServerLobbyUser u in game.users)
+                u.current_game = null;
             games.remove(game);
         }
         else
