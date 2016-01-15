@@ -8,6 +8,7 @@ public class LobbyGameServerController
     private ArrayList<ServerPlayer> players;
     private ArrayList<ServerPlayer> observers;
     private bool finish = false;
+    private Mutex mutex = Mutex();
 
     public signal void finished(LobbyGameServerController server);
 
@@ -40,8 +41,10 @@ public class LobbyGameServerController
 
         while (!finish && !server.finished)
         {
+            mutex.lock();
             process_messages();
             server.process((float)timer.elapsed());
+            mutex.unlock();
             sleep();
         }
 
@@ -68,7 +71,24 @@ public class LobbyGameServerController
 
     private void player_disconnected(ServerPlayer player)
     {
-        finish = true;
+        bool all_disconnected = true;
+        player.is_disconnected = true;
+
+        mutex.lock();
+        server.player_disconnected(player);
+
+        foreach (ServerPlayer p in players)
+            if (!p.bot && !p.is_disconnected)
+                all_disconnected = false;
+
+        foreach (ServerPlayer p in observers)
+            if (!p.bot && !p.is_disconnected)
+                all_disconnected = false;
+
+        mutex.unlock();
+
+        if (all_disconnected)
+            finish = true;
     }
 
     private void die(ArrayList<ServerPlayer> players, ArrayList<ServerPlayer> observers)
