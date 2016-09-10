@@ -197,6 +197,8 @@ public class LobbyConnection
     private Mutex send_mutex = Mutex();
     private ArrayList<ClientLobbyMessage> messages = new ArrayList<ClientLobbyMessage>();
 
+    public signal void tunnel_disconnected(LobbyConnection connection);
+
     public LobbyConnection(Connection connection)
     {
         this.connection = connection;
@@ -250,6 +252,7 @@ public class LobbyConnection
     private void close_connection_request()
     {
         send(new ServerLobbyMessageCloseTunnel());
+        tunnel_disconnected(this);
     }
 
     private void message_received(Connection connection, Message msg)
@@ -271,6 +274,7 @@ public class LobbyConnection
         if (m is ClientLobbyMessageCloseTunnel)
         {
             tunneled_connection.disconnected();
+            tunnel_disconnected(this);
             return;
         }
 
@@ -354,6 +358,13 @@ public class ServerLobby
                 foreach (ServerLobbyUser u in users)
                     u.send(msg);
                 continue;
+            }
+
+            if (user.tunnel_disconnected)
+            {
+                user.tunnel_disconnected = false;
+                if (user.current_game != null && user.current_game.running)
+                    user.current_game = null;
             }
 
             ClientLobbyMessage? message;
@@ -505,6 +516,7 @@ public class ServerLobbyUser
         this.ID = ID;
         this.username = username;
         this.connection = connection;
+        connection.tunnel_disconnected.connect(do_tunnel_disconnected);
     }
 
     public void send(ServerLobbyMessage message)
@@ -517,9 +529,15 @@ public class ServerLobbyUser
         return connection.dequeue_message();
     }
 
+    private void do_tunnel_disconnected()
+    {
+        tunnel_disconnected = true;
+    }
+
     public int ID { get; private set; }
     public string username { get; private set; }
     public bool disconnected { get { return connection.disconnected; } }
+    public bool tunnel_disconnected { get; set; }
     public ServerLobbyGame? current_game { get; set; }
     public LobbyConnection connection { get; private set; }
 }
@@ -529,6 +547,7 @@ public class ServerLobbyGame
     private ServerMenu? menu = new ServerMenu();
     private LobbyGameServerController controller;
     private GameStartInfo start_info;
+    private ServerSettings settings;
     private ArrayList<UserPlayer> players;
 
     public signal void finished(ServerLobbyGame game);
@@ -574,15 +593,17 @@ public class ServerLobbyGame
     public void start()
     {
         should_start = false;
+        running = true;
         controller = new LobbyGameServerController(menu.players, menu.observers);
         controller.finished.connect(on_finished);
         menu = null;
-        controller.start(start_info);
+        controller.start(start_info, settings);
     }
 
     private void menu_start(GameStartInfo start_info)
     {
         this.start_info = start_info;
+        settings = menu.settings;
         should_start = true;
     }
 
@@ -594,6 +615,7 @@ public class ServerLobbyGame
     public int ID { get; private set; }
     public ArrayList<ServerLobbyUser> users { get; private set; }
     public bool should_start { get; private set; }
+    public bool running { get; private set; }
 
     private class UserPlayer
     {

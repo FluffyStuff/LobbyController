@@ -18,7 +18,7 @@ public class LobbyGameServerController
         this.observers = observers;
     }
 
-    public void start(GameStartInfo info)
+    public void start(GameStartInfo info, ServerSettings settings)
     {
         foreach (ServerPlayer player in players)
         {
@@ -26,17 +26,18 @@ public class LobbyGameServerController
             player.disconnected.connect(player_disconnected);
         }
 
-        Threading.start3(server_worker, players, observers, info);
+        Threading.start4(server_worker, players, observers, info, settings);
     }
 
-    private void server_worker(Object players_obj, Object observers_obj, Object start_info_obj)
+    private void server_worker(Object players_obj, Object observers_obj, Object start_info_obj, Object settings_obj)
     {
         ArrayList<ServerPlayer> players = players_obj as ArrayList<ServerPlayer>;
         ArrayList<ServerPlayer> observers = observers_obj as ArrayList<ServerPlayer>;
         GameStartInfo info = (GameStartInfo)start_info_obj;
+        ServerSettings settings = (ServerSettings)settings_obj;
         Rand rnd = new Rand();
 
-        server = new Server(players, observers, rnd, info);
+        server = new Server(players, observers, rnd, info, settings);
         Timer timer = new Timer();
 
         while (!finish && !server.finished)

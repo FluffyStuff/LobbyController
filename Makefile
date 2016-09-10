@@ -6,6 +6,10 @@ DIRS  = \
 	../RiichiMahjong/source/Engine/Helper/Helper.vala \
 	../RiichiMahjong/source/Engine/Helper/Networking.vala \
 	../RiichiMahjong/source/Engine/Helper/Threading.vala \
+	../RiichiMahjong/source/Engine/Files/FileLoader.vala \
+	../RiichiMahjong/source/Engine/Properties/Color.vala \
+	../RiichiMahjong/source/Game/ServerSettings.vala \
+	../RiichiMahjong/source/Game/Options.vala \
 	../RiichiMahjong/source/Game/Logic/*.vala \
 	../RiichiMahjong/source/GameServer/Bots/*.vala \
 	../RiichiMahjong/source/GameServer/GameState/*.vala \
