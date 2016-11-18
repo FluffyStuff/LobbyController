@@ -261,7 +261,7 @@ public class LobbyConnection
 
         if (m == null || !(m.get_type().is_a(typeof(ClientLobbyMessage)) || m.get_type().is_a(typeof(ClientMessage))))
         {
-            print("LobbyConnection: Server discarding invalid client lobby message!\n");
+            Environment.log(LogType.DEBUG, "LobbyConnection", "Server discarding invalid client lobby message");
             return;
         }
 
@@ -317,6 +317,7 @@ public class ServerLobby
     {
         mutex.lock();
 
+        Environment.log(LogType.INFO, "ServerLobby", "User " + user.username + " entered lobby " + name);
         ServerLobbyMessageUserEnteredLobby msg = new ServerLobbyMessageUserEnteredLobby(new LobbyUser(user.ID, user.username));
         foreach (ServerLobbyUser u in users)
             u.send(msg);
@@ -385,6 +386,7 @@ public class ServerLobby
                     foreach (ServerLobbyUser u in users)
                         u.send(msg);
 
+                    Environment.log(LogType.INFO, "ServerLobby", "User " + user.username + " left lobby " + name);
                     user_left_lobby(this, user);
                     break;
                 }
@@ -404,6 +406,7 @@ public class ServerLobby
                     u.send(msg);
                 active_games.add(game);
                 games.remove_at(i--);
+                Environment.log(LogType.INFO, "ServerLobby", "Game " + game.ID.to_string() + " started in lobby " + name);
             }
         }
         game_mutex.unlock();
@@ -420,6 +423,8 @@ public class ServerLobby
         }
 
         ServerLobbyGame game = new ServerLobbyGame(game_IDs++);
+        Environment.log(LogType.INFO, "ServerLobby", "User " + user.username + " created game " + game.ID.to_string());
+
         games.add(game);
 
         ServerLobbyMessageGameAdded game_msg = new ServerLobbyMessageGameAdded(new LobbyGame(game.ID, new LobbyUser[0]));
@@ -454,6 +459,8 @@ public class ServerLobby
                         u.send(msg);
 
                     user.current_game = game;
+
+                    Environment.log(LogType.INFO, "ServerLobby", "User " + user.username + " entered game " + game.ID.to_string());
                     return;
                 }
             }
@@ -474,6 +481,7 @@ public class ServerLobby
             return;
 
         ServerLobbyGame game = user.current_game;
+        Environment.log(LogType.INFO, "ServerLobby", "User " + user.username + " left game " + game.ID.to_string());
 
         ServerLobbyMessageUserLeftGame msg = new ServerLobbyMessageUserLeftGame(user.ID, game.ID);
         foreach (ServerLobbyUser u in users)
@@ -488,6 +496,7 @@ public class ServerLobby
             foreach (ServerLobbyUser u in game.users)
                 u.current_game = null;
             games.remove(game);
+            Environment.log(LogType.INFO, "ServerLobby", "Game " + game.ID.to_string() + " removed in lobby " + name);
         }
         else
             game.remove_user(user);
@@ -499,6 +508,7 @@ public class ServerLobby
     {
         game_mutex.lock();
         active_games.remove(game);
+        Environment.log(LogType.INFO, "ServerLobby", "Game " + game.ID.to_string() + " finished in lobby " + name);
         game_mutex.unlock();
     }
 
