@@ -35,9 +35,10 @@ public class LobbyGameServerController
         ArrayList<ServerPlayer> observers = observers_obj as ArrayList<ServerPlayer>;
         GameStartInfo info = (GameStartInfo)start_info_obj;
         ServerSettings settings = (ServerSettings)settings_obj;
-        Rand rnd = new Rand();
+        Random rnd = new Random();
+        DefaultServerGameRoundInfoSource source = new DefaultServerGameRoundInfoSource(rnd);
 
-        server = new Server(players, observers, rnd, info, settings);
+        server = new Server(players, observers, rnd, info, settings, source, true, false);
         Timer timer = new Timer();
 
         while (!finish && !server.finished)

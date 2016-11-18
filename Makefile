@@ -3,11 +3,13 @@ NAME  = LobbyController
 DIRS  = \
 	source/*.vala \
 	../RiichiMahjong/source/Environment.vala \
-	../RiichiMahjong/source/Engine/Helper/Helper.vala \
-	../RiichiMahjong/source/Engine/Helper/Networking.vala \
-	../RiichiMahjong/source/Engine/Helper/Threading.vala \
-	../RiichiMahjong/source/Engine/Files/FileLoader.vala \
-	../RiichiMahjong/source/Engine/Properties/Color.vala \
+	../Engine/EngineLog.vala \
+	../Engine/Helper/Helper.vala \
+	../Engine/Helper/DelayTimer.vala \
+	../Engine/Helper/Networking.vala \
+	../Engine/Helper/Threading.vala \
+	../Engine/Files/FileLoader.vala \
+	../Engine/Properties/Color.vala \
 	../RiichiMahjong/source/Game/ServerSettings.vala \
 	../RiichiMahjong/source/Game/Options.vala \
 	../RiichiMahjong/source/Game/Logic/*.vala \
@@ -21,7 +23,7 @@ VAPI  = --vapidir=../RiichiMahjong/vapi
 #-w = Suppress C warnings (Since they stem from the vala code gen)
 OTHER = -X -w
 O     = -o bin/$(NAME)
-DEBUG = --enable-checking -g
+DEBUG = --save-temps --enable-checking -g -X -ggdb -X -O0 -D DEBUG
 
 all: debug
 

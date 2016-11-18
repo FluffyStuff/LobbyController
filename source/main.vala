@@ -1,15 +1,23 @@
+private static bool debug =
+#if DEBUG
+    true
+#else
+    false
+#endif
+;
+
 public int main()
 {
-    Environment.init();
+    Environment.init(debug);
 
-    uint16 port = 1337;
+    uint16 port = Environment.LOBBY_PORT;
 
-    print("Starting LobbyController on port: " + port.to_string() + "\n");
+    Environment.log(LogType.INFO, "Main", "Starting LobbyController on port " + port.to_string());
 
     LobbyController lobby = new LobbyController(port);
     if (!lobby.start())
     {
-        print("main: Could not start lobby!\n");
+        Environment.log(LogType.ERROR, "Main", "Could not start lobby");
         return -1;
     }
 
