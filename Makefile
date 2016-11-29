@@ -16,7 +16,7 @@ DIRS  = \
 	../RiichiMahjong/source/GameServer/Bots/*.vala \
 	../RiichiMahjong/source/GameServer/GameState/*.vala \
 	../RiichiMahjong/source/GameServer/Server/*.vala
-PKGS  = --thread --target-glib 2.32 --pkg gio-2.0 --pkg gee-0.8
+PKGS  = --thread --target-glib 2.32 --pkg gio-2.0 --pkg gee-0.8 --pkg zlib --pkg win32
 WLIBS = -X ../RiichiMahjong/lib/GEE/libgee.dll.a
 LLIBS = -X -lm
 VAPI  = --vapidir=../RiichiMahjong/vapi
@@ -28,10 +28,10 @@ DEBUG = --save-temps --enable-checking -g -X -ggdb -X -O0 -D DEBUG
 all: debug
 
 debug:
-	$(VALAC) $(O) $(DIRS) $(PKGS) $(LLIBS) $(VAPI) $(OTHER) $(DEBUG)
+	$(VALAC) $(O) $(DIRS) $(PKGS) $(LLIBS) $(VAPI) $(OTHER) $(DEBUG) -D LINUX
 
 release:
-	$(VALAC) $(O) $(DIRS) $(PKGS) $(LLIBS) $(VAPI) $(OTHER)
+	$(VALAC) $(O) $(DIRS) $(PKGS) $(LLIBS) $(VAPI) $(OTHER) -D LINUX
 
 clean:
 	rm bin/$(NAME)
@@ -39,11 +39,11 @@ clean:
 
 WindowsDebug:
 	$(eval SHELL = C:/Windows/System32/cmd.exe)
-	$(VALAC) $(O) $(DIRS) $(PKGS) $(WLIBS) $(VAPI) $(OTHER) $(DEBUG)
+	$(VALAC) $(O) $(DIRS) $(PKGS) $(WLIBS) $(VAPI) $(OTHER) $(DEBUG) -D WINDOWS
 
 WindowsRelease:
 	$(eval SHELL = C:/Windows/System32/cmd.exe)
-	$(VALAC) $(O) $(DIRS) $(PKGS) $(WLIBS) $(VAPI) $(OTHER) -X -mwindows
+	$(VALAC) $(O) $(DIRS) $(PKGS) $(WLIBS) $(VAPI) $(OTHER) -D WINDOWS -X -mwindows
 
 cleanWindowsDebug: cleanWindows
 
