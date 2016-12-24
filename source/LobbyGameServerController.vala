@@ -26,6 +26,9 @@ public class LobbyGameServerController
             player.disconnected.connect(player_disconnected);
         }
 
+        foreach (ServerPlayer player in observers)
+            player.receive_message.connect(message_received);
+
         Threading.start4(server_worker, players, observers, info, settings);
     }
 
