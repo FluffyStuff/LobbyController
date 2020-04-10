@@ -1,9 +1,10 @@
 using Gee;
 using GameServer;
+using Engine;
 
 public class LobbyGameServerController
 {
-    private Server server;
+    private RegularServer server;
     private ClientMessageParser parser = new ClientMessageParser();
     private ArrayList<ServerPlayer> players;
     private ArrayList<ServerPlayer> observers;
@@ -38,10 +39,9 @@ public class LobbyGameServerController
         ArrayList<ServerPlayer> observers = observers_obj as ArrayList<ServerPlayer>;
         GameStartInfo info = (GameStartInfo)start_info_obj;
         ServerSettings settings = (ServerSettings)settings_obj;
-        Random rnd = new Random();
-        DefaultServerGameRoundInfoSource source = new DefaultServerGameRoundInfoSource(rnd);
+        RandomClass rnd = new RandomClass();
 
-        server = new Server(players, observers, rnd, info, settings, source, true, false);
+        server = new RegularServer(players, observers, rnd, info, settings);
         Timer timer = new Timer();
 
         while (!finish && !server.finished)

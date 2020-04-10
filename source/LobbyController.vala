@@ -1,6 +1,7 @@
 using Gee;
 using Lobby;
 using GameServer;
+using Engine;
 
 public class LobbyController
 {
@@ -257,7 +258,7 @@ public class LobbyConnection
 
     private void message_received(Connection connection, Message msg)
     {
-        Serializable? m = Serializable.deserialize(msg.data);
+        Serializable? m = Serializable.deserialize(msg.get_message());
 
         if (m == null || !(m.get_type().is_a(typeof(ClientLobbyMessage)) || m.get_type().is_a(typeof(ClientMessage))))
         {

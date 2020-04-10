@@ -3,12 +3,17 @@ NAME  = LobbyController
 DIRS  = \
 	source/*.vala \
 	../Engine/EngineLog.vala \
+	../Engine/Helper/DeltaTimers.vala \
 	../Engine/Helper/Helper.vala \
 	../Engine/Helper/Timers.vala \
 	../Engine/Helper/Networking.vala \
 	../Engine/Helper/Threading.vala \
+	../Engine/Helper/RandomClass.vala \
 	../Engine/Files/FileLoader.vala \
+	../Engine/Properties/Animation.vala \
 	../Engine/Properties/Color.vala \
+	../Engine/Properties/Curve.vala \
+	../Engine/Properties/DeltaArgs.vala \
 	../OpenRiichi/source/Environment.vala \
 	../OpenRiichi/source/Game/ServerSettings.vala \
 	../OpenRiichi/source/Game/Options.vala \
