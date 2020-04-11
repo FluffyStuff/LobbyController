@@ -614,7 +614,7 @@ public class ServerLobbyGame
     private void menu_start(GameStartInfo start_info)
     {
         this.start_info = start_info;
-        settings = menu.settings;
+        settings = new ServerSettings.from_settings(menu.settings); // Force value checking
         should_start = true;
     }
 
