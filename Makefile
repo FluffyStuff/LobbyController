@@ -21,7 +21,7 @@ DIRS  = \
 	../OpenRiichi/source/GameServer/Bots/*.vala \
 	../OpenRiichi/source/GameServer/GameState/*.vala \
 	../OpenRiichi/source/GameServer/Server/*.vala
-PKGS  = --thread --target-glib 2.32 --pkg gio-2.0 --pkg gee-0.8 --pkg zlib --pkg win32 -X -lm
+PKGS  = --target-glib 2.54 --pkg gio-2.0 --pkg gee-0.8 --pkg zlib --pkg win32 -X -lm
 VAPI  = --vapidir=../OpenRiichi/vapi
 #-w = Suppress C warnings (Since they stem from the vala code gen)
 OTHER = -X -w
