@@ -2,27 +2,27 @@ VALAC = valac
 NAME  = LobbyController
 DIRS  = \
 	source/*.vala \
-	../Engine/EngineLog.vala \
-	../Engine/Helper/DeltaTimers.vala \
-	../Engine/Helper/Helper.vala \
-	../Engine/Helper/Timers.vala \
-	../Engine/Helper/Networking.vala \
-	../Engine/Helper/Threading.vala \
-	../Engine/Helper/RandomClass.vala \
-	../Engine/Files/FileLoader.vala \
-	../Engine/Properties/Animation.vala \
-	../Engine/Properties/Color.vala \
-	../Engine/Properties/Curve.vala \
-	../Engine/Properties/DeltaArgs.vala \
-	../OpenRiichi/source/Environment.vala \
-	../OpenRiichi/source/Game/ServerSettings.vala \
-	../OpenRiichi/source/Game/Options.vala \
-	../OpenRiichi/source/Game/Logic/*.vala \
-	../OpenRiichi/source/GameServer/Bots/*.vala \
-	../OpenRiichi/source/GameServer/GameState/*.vala \
-	../OpenRiichi/source/GameServer/Server/*.vala
+	Engine/EngineLog.vala \
+	Engine/Helper/DeltaTimers.vala \
+	Engine/Helper/Helper.vala \
+	Engine/Helper/Timers.vala \
+	Engine/Helper/Networking.vala \
+	Engine/Helper/Threading.vala \
+	Engine/Helper/RandomClass.vala \
+	Engine/Files/FileLoader.vala \
+	Engine/Properties/Animation.vala \
+	Engine/Properties/Color.vala \
+	Engine/Properties/Curve.vala \
+	Engine/Properties/DeltaArgs.vala \
+	OpenRiichi/source/Environment.vala \
+	OpenRiichi/source/Game/ServerSettings.vala \
+	OpenRiichi/source/Game/Options.vala \
+	OpenRiichi/source/Game/Logic/*.vala \
+	OpenRiichi/source/GameServer/Bots/*.vala \
+	OpenRiichi/source/GameServer/GameState/*.vala \
+	OpenRiichi/source/GameServer/Server/*.vala
 PKGS  = --target-glib 2.54 --pkg gio-2.0 --pkg gee-0.8 --pkg zlib --pkg win32 -X -lm
-VAPI  = --vapidir=../OpenRiichi/vapi
+VAPI  = --vapidir=OpenRiichi/vapi
 #-w = Suppress C warnings (Since they stem from the vala code gen)
 OTHER = -X -w
 O     = -o bin/$(NAME)

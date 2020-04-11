@@ -1,0 +1,6 @@
+[submodule "OpenRiichi"]
+	path = OpenRiichi
+	url = https://github.com/FluffyStuff/OpenRiichi.git
+[submodule "Engine"]
+	path = Engine
+	url = https://github.com/FluffyStuff/Engine.git
