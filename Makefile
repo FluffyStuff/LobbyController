@@ -30,10 +30,10 @@ DEBUG = -v --save-temps --enable-checking -g -X -ggdb -X -O0 -D DEBUG
 
 all: debug
 
-debug:
+linuxDebug:
 	$(VALAC) $(O) $(DIRS) $(PKGS) $(VAPI) $(OTHER) $(DEBUG) -D LINUX
 
-release:
+linuxRelease:
 	$(VALAC) $(O) $(DIRS) $(PKGS) $(VAPI) $(OTHER) -D LINUX
 
 windowsDebug:
