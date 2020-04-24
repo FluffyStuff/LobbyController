@@ -1,4 +1,5 @@
 bin/LobbyController*
+build
 *.c
 *.o
 *.exe
